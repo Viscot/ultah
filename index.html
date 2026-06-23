@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HBD Veronica, S.Psi!</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@300;400;600;800&family=Permanent+Marker&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-dark: #05030d;
+        --bg-mid: #1a123a;
+        --bg-light: #3a103b;
+        --gold: #ffd700;
+        --gold-pale: #fff3b0;
+        --pink: #ff416c;
+        --cyan: #00f2fe;
+        --purple: #a18cd1;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--bg-dark),
+          var(--bg-mid),
+          var(--bg-light),
+          var(--bg-dark)
+        );
+        background-size: 400% 400%;
+        animation: bgShift 20s ease infinite;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        overflow-x: hidden;
+        position: relative;
+        color: white;
+        text-align: center;
+        padding: 160px 10px 60px 10px;
+      }
+
+      #starfield {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      /* Spotlight dioptimalkan agar tidak berat */
+      .spotlight {
+        position: absolute;
+        top: -100px;
+        width: 150px;
+        height: 180vh;
+        border-radius: 50%;
+        transform-origin: top center;
+        z-index: 1;
+        pointer-events: none;
+        filter: blur(20px);
+        will-change: transform;
+      }
+      .spotlight.cyan {
+        left: 10%;
+        background: radial-gradient(
+          circle at top,
+          rgba(0, 242, 254, 0.2),
+          rgba(0, 242, 254, 0)
+        );
+        animation: swing 9s ease-in-out infinite alternate;
+      }
+      .spotlight.gold {
+        right: 10%;
+        background: radial-gradient(
+          circle at top,
+          rgba(255, 215, 0, 0.15),
+          rgba(255, 215, 0, 0)
+        );
+        animation: swing 7s ease-in-out infinite alternate-reverse;
+      }
+
+      .flags-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        z-index: 2;
+        pointer-events: none;
+        opacity: 0.8;
+      }
+
+      #orbs-container,
+      #balloons-container,
+      #fireworks-container,
+      #rain-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      #orbs-container {
+        z-index: 3;
+      }
+      #balloons-container,
+      #fireworks-container {
+        z-index: 5;
+        overflow: hidden;
+      }
+      #rain-container {
+        z-index: 99;
+        overflow: hidden;
+      }
+
+      /* Balon dioptimalkan performanya */
+      .balloon {
+        position: absolute;
+        width: 65px;
+        height: 85px;
+        border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+        bottom: -120px;
+        animation: flyUp linear forwards;
+        opacity: 0.9;
+        box-shadow:
+          inset -6px -6px 20px rgba(0, 0, 0, 0.3),
+          inset 6px 6px 20px rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        transition: transform 0.2s;
+        pointer-events: auto;
+        will-change: transform;
+      }
+      .balloon:hover {
+        transform: scale(1.15) translateY(-5px);
+      }
+
+      /* Kembang Api Lebih Ringan */
+      .fw-particle {
+        position: absolute;
+        background: currentColor;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 100;
+        box-shadow: 0 0 8px currentColor;
+        will-change: transform, opacity;
+      }
+
+      .rain-confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        animation: fall linear infinite;
+        pointer-events: none;
+        will-change: transform;
+      }
+
+      /* Main Container */
+      .container {
+        position: relative;
+        z-index: 10;
+        padding: 90px 30px 50px 30px;
+        background: rgba(10, 6, 22, 0.7);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 40px;
+        border: 3px solid transparent;
+        border-image: linear-gradient(
+            135deg,
+            var(--cyan),
+            var(--gold),
+            var(--pink),
+            var(--cyan)
+          )
+          1;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+        max-width: 800px;
+        width: 100%;
+        opacity: 0;
+        transform: translateY(50px) scale(0.95);
+        animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+      }
+
+      .svg-group {
+        position: absolute;
+        top: -130px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: flex-end;
+        gap: 20px;
+        z-index: 20;
+        animation: floatGroup 4s ease-in-out infinite;
+        width: 110%;
+        justify-content: center;
+        will-change: transform;
+      }
+      .bear-svg {
+        width: 160px;
+        height: 160px;
+      }
+      .cake-svg {
+        width: 105px;
+        height: 125px;
+      }
+      .flame {
+        transform-origin: bottom center;
+        animation: flicker 0.4s ease-in-out infinite alternate;
+        opacity: 0;
+      }
+      .crown {
+        fill: var(--gold);
+      }
+
+      /* Typography */
+      .title {
+        font-family: "Fredoka One", cursive;
+        font-size: 5rem;
+        line-height: 1.1;
+        margin-bottom: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--pink),
+          #fff,
+          var(--gold),
+          #fff,
+          var(--cyan)
+        );
+        background-size: 300% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: textShimmer 5s linear infinite;
+        filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+        letter-spacing: -2px;
+        position: relative;
+      }
+      .title::after {
+        content: "THE ULTIMATE FESTIVAL";
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.1rem;
+        font-family: "Poppins";
+        font-weight: 800;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        text-shadow: 0 0 10px var(--gold);
+      }
+
+      .name {
+        font-size: 2.6rem;
+        font-weight: 800;
+        margin-bottom: 40px;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      .name-txt {
+        background: linear-gradient(to bottom, #fff 50%, var(--cyan) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .name i {
+        color: var(--gold);
+      }
+
+      /* Message Box */
+      .message-box {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 30px;
+        position: relative;
+      }
+
+      .message-box.show {
+        max-height: 5000px;
+        opacity: 1;
+        padding: 40px 25px;
+        margin-bottom: 40px;
+        border: 3px dashed rgba(255, 215, 0, 0.5);
+        background-image:
+          linear-gradient(rgba(10, 6, 22, 0.8), rgba(10, 6, 22, 0.8)),
+          url("https://media.giphy.com/media/3o7qE1YN7aBOFPRw8E/giphy.gif");
+        background-size: cover;
+        background-position: center;
+      }
+
+      .message {
+        font-size: 1.25rem;
+        line-height: 1.9;
+        color: #fff;
+        margin-bottom: 40px;
+        text-align: justify;
+        text-justify: inter-word;
+      }
+      .icon-accent {
+        color: var(--pink);
+        margin: 0 5px;
+        font-size: 1.3rem;
+      }
+      .highlight {
+        color: var(--gold);
+        font-weight: 600;
+      }
+
+      /* Polaroid Gallery Area */
+      .gallery-area {
+        position: relative;
+        width: 100%;
+      }
+      .gallery-title {
+        font-family: "Permanent Marker", cursive;
+        color: var(--gold);
+        font-size: 2.6rem;
+        margin-bottom: 35px;
+        opacity: 0;
+        transform: translateY(20px);
+        text-shadow: 2px 2px 0 #000;
+      }
+      .message-box.show .gallery-title {
+        animation: slideUp 0.8s ease forwards;
+        animation-delay: 0.8s;
+      }
+
+      .gif-side {
+        position: absolute;
+        width: 75px;
+        height: auto;
+        z-index: 5;
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.8s ease;
+      }
+      .gif-side.left {
+        left: -10px;
+        bottom: 40px;
+      }
+      .gif-side.right {
+        right: -10px;
+        bottom: 40px;
+      }
+      .message-box.show .gif-side {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 15px 15px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .polaroid {
+        background: #fff;
+        padding: 10px;
+        border-radius: 4px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        position: relative;
+        opacity: 0;
+        transform: translateY(40px) scale(0.9) rotate(var(--rot));
+        transition:
+          transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15),
+          box-shadow 0.3s;
+        cursor: pointer;
+        width: 100%;
+        will-change: transform, opacity;
+      }
+      .polaroid img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 2px;
+        background: #222;
+      }
+      .polaroid::before {
+        content: "";
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%) rotate(var(--tape-rot));
+        width: 45px;
+        height: 18px;
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(2px);
+        z-index: 2;
+      }
+
+      .polaroid:nth-child(1) {
+        --rot: -5deg;
+        --delay: 0.9s;
+        --tape-rot: 2deg;
+      }
+      .polaroid:nth-child(2) {
+        --rot: 3deg;
+        --delay: 1.1s;
+        --tape-rot: -3deg;
+      }
+      .polaroid:nth-child(3) {
+        --rot: -2deg;
+        --delay: 1.3s;
+        --tape-rot: 1deg;
+      }
+      .polaroid:nth-child(4) {
+        --rot: 4deg;
+        --delay: 1.5s;
+        --tape-rot: 4deg;
+      }
+      .polaroid:nth-child(5) {
+        --rot: -4deg;
+        --delay: 1.7s;
+        --tape-rot: -2deg;
+      }
+      .polaroid:nth-child(6) {
+        --rot: 5deg;
+        --delay: 1.9s;
+        --tape-rot: 3deg;
+      }
+
+      .message-box.show .polaroid {
+        animation: popPhoto 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
+        animation-delay: var(--delay);
+      }
+      .polaroid:hover {
+        transform: scale(1.1) rotate(0deg) translateY(-10px) !important;
+        z-index: 30;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      }
+
+      /* Button & Footer */
+      .btn-container {
+        margin-top: -10px;
+        position: relative;
+        z-index: 15;
+      }
+      .btn {
+        background: linear-gradient(45deg, var(--pink), #ff758c, var(--gold));
+        background-size: 200% auto;
+        border: none;
+        padding: 20px 45px;
+        font-size: 1.3rem;
+        color: white;
+        border-radius: 60px;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(255, 65, 108, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        animation:
+          pulseBtn 2s infinite,
+          btnGradient 3s infinite;
+        width: auto;
+        max-width: 100%;
+      }
+      .btn:hover {
+        transform: translateY(-5px) scale(1.03);
+        box-shadow: 0 15px 40px rgba(255, 65, 108, 0.7);
+      }
+      .btn i {
+        margin-right: 10px;
+      }
+
+      .footer-hash {
+        color: var(--gold);
+        font-family: "Fredoka One", cursive;
+        font-size: 1.8rem;
+        margin-top: 35px;
+        opacity: 0;
+      }
+      .message-box.show .footer-hash {
+        animation: fadeIn 0.8s forwards;
+        animation-delay: 2.1s;
+      }
+
+      /* Keyframes Optimal (Menggunakan transform & opacity saja agar lancar) */
+      @keyframes bgShift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      @keyframes popIn {
+        0% {
+          transform: translateY(50px) scale(0.95);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+      }
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes swing {
+        from {
+          transform: rotate(-10deg);
+        }
+        to {
+          transform: rotate(10deg);
+        }
+      }
+      @keyframes floatGroup {
+        0%,
+        100% {
+          transform: translate(-50%, 0);
+        }
+        50% {
+          transform: translate(-50%, -15px);
+        }
+      }
+      @keyframes flicker {
+        0% {
+          transform: scale(1) rotate(-2deg);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(1.2) rotate(2deg);
+          opacity: 1;
+        }
+      }
+      @keyframes textShimmer {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      @keyframes pulseBtn {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.6);
+        }
+        50% {
+          box-shadow: 0 0 0 15px rgba(255, 65, 108, 0);
+        }
+      }
+      @keyframes btnGradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      @keyframes flyUp {
+        0% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 0;
+        }
+        5% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-135vh) rotate(var(--final-rot));
+          opacity: 0;
+        }
+      }
+      @keyframes popPhoto {
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1) rotate(var(--rot));
+        }
+      }
+      @keyframes slideUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fall {
+        0% {
+          transform: translateY(-10vh) rotate(0deg);
+        }
+        100% {
+          transform: translateY(110vh) rotate(360deg);
+        }
+      }
+      @keyframes fireworkBurst {
+        0% {
+          transform: translate(0, 0) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--tx), var(--ty)) scale(0);
+          opacity: 0;
+        }
+      }
+
+      /* Responsive Media Queries */
+      @media (max-width: 768px) {
+        .photo-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
+          padding: 10px 5px;
+        }
+        .title {
+          font-size: 3.2rem;
+        }
+        .title::after {
+          font-size: 0.95rem;
+          letter-spacing: 3px;
+          bottom: -8px;
+        }
+        .name {
+          font-size: 1.8rem;
+          margin-bottom: 25px;
+        }
+        body {
+          padding-top: 140px;
+        }
+        .svg-group {
+          top: -110px;
+        }
+        .bear-svg {
+          width: 125px;
+          height: 125px;
+        }
+        .cake-svg {
+          width: 80px;
+          height: 100px;
+        }
+        .message {
+          font-size: 1.1rem;
+        }
+        .gallery-title {
+          font-size: 2rem;
+        }
+      }
+      @media (max-width: 576px) {
+        .title {
+          font-size: 2.5rem;
+        }
+        .title::after {
+          display: none;
+        }
+        .name {
+          font-size: 1.4rem;
+          letter-spacing: 1px;
+        }
+        .svg-group {
+          top: -90px;
+          gap: 10px;
+          width: 120%;
+        }
+        .bear-svg {
+          width: 105px;
+          height: 105px;
+        }
+        .cake-svg {
+          width: 70px;
+          height: 90px;
+        }
+        body {
+          padding-top: 120px;
+        }
+        .container {
+          padding: 65px 15px 35px 15px;
+          border-radius: 30px;
+        }
+        .btn {
+          font-size: 1.15rem;
+          padding: 16px 30px;
+          width: 100%;
+        }
+        .message {
+          font-size: 1rem;
+          line-height: 1.7;
+          text-align: left;
+        }
+        .gallery-title {
+          font-size: 1.6rem;
+        }
+        .polaroid {
+          padding: 8px;
+        }
+        .gif-side {
+          position: relative;
+          display: inline-block;
+          bottom: 0;
+          margin: 10px 10px;
+          width: 65px;
+        }
+      }
+      @media (max-width: 400px) {
+        .photo-grid {
+          grid-template-columns: repeat(1, 1fr);
+        }
+        .polaroid {
+          max-width: 250px;
+          margin: 0 auto;
+        }
+        .svg-group {
+          top: -80px;
+        }
+        .bear-svg {
+          width: 95px;
+          height: 95px;
+        }
+        .cake-svg {
+          width: 60px;
+          height: 80px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <audio id="bgMusic" loop prefetch="auto">
+      <source src="sound/hbd.mp3" type="audio/mpeg" />
+    </audio>
+
+    <div id="starfield"></div>
+    <div id="orbs-container"></div>
+
+    <div class="spotlight cyan"></div>
+    <div class="spotlight gold"></div>
+
+    <div id="balloons-container"></div>
+    <div id="fireworks-container"></div>
+    <div id="rain-container"></div>
+
+    <div class="container" id="mainCard">
+      <div class="svg-group" id="characterGroup">
+        <svg
+          class="cake-svg"
+          viewBox="0 0 100 120"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse cx="50" cy="110" rx="45" ry="12" fill="rgba(0,0,0,0.3)" />
+          <rect x="15" y="65" width="70" height="45" rx="8" fill="#a1c4fd" />
+          <path
+            d="M15 72 Q 32.5 90 50 72 T 85 72 V 68 Q 50 60 15 68 Z"
+            fill="var(--pink)"
+          />
+          <rect x="25" y="35" width="50" height="35" rx="6" fill="#fff" />
+          <path
+            d="M25 40 Q 37.5 50 50 40 T 75 40 V 38 Q 50 33 25 38 Z"
+            fill="#ff758c"
+          />
+          <circle cx="35" cy="85" r="3" fill="var(--gold)" />
+          <circle cx="50" cy="90" r="3" fill="#fff" />
+          <circle cx="65" cy="85" r="3" fill="var(--cyan)" />
+          <rect x="47" y="5" width="6" height="30" fill="#fff" rx="2" />
+          <path
+            id="candleFlame"
+            class="flame"
+            d="M50 -18 Q 44 -8 50 2 Q 56 -8 50 -18 Z"
+            fill="#ff9900"
+          />
+        </svg>
+
+        <svg
+          class="bear-svg"
+          viewBox="0 0 200 200"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse cx="100" cy="180" rx="60" ry="15" fill="rgba(0,0,0,0.3)" />
+          <circle cx="55" cy="55" r="25" fill="#ffb07c" />
+          <circle cx="145" cy="55" r="25" fill="#ffb07c" />
+          <circle cx="100" cy="160" r="50" fill="#ffcc99" />
+          <rect
+            x="70"
+            y="135"
+            width="60"
+            height="60"
+            rx="5"
+            fill="var(--cyan)"
+          />
+          <rect x="94" y="135" width="12" height="60" fill="var(--pink)" />
+          <rect x="70" y="159" width="60" height="12" fill="var(--pink)" />
+          <ellipse
+            cx="60"
+            cy="160"
+            rx="18"
+            ry="30"
+            fill="#ffb07c"
+            transform="rotate(-30 60 160)"
+          />
+          <ellipse
+            cx="140"
+            cy="160"
+            rx="18"
+            ry="30"
+            fill="#ffb07c"
+            transform="rotate(30 140 160)"
+          />
+          <circle cx="100" cy="100" r="60" fill="#ffcc99" />
+          <polygon class="crown" points="100,20 80,55 120,55" />
+          <circle cx="85" cy="50" r="3" fill="#fff" />
+          <circle cx="115" cy="50" r="3" fill="#fff" />
+          <path
+            d="M 70 85 Q 85 98 100 85"
+            fill="none"
+            stroke="#5a3d31"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+          <path
+            d="M 100 85 Q 115 98 130 85"
+            fill="none"
+            stroke="#5a3d31"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+          <ellipse cx="100" cy="115" rx="18" ry="12" fill="#fff" />
+          <circle cx="100" cy="110" r="6" fill="#5a3d31" />
+        </svg>
+      </div>
+
+      <h1 class="title">Happy Birthday</h1>
+      <h2 class="name">
+        <span class="name-txt">Veronica, S.Psi</span>
+      </h2>
+
+      <div class="message-box" id="messageBox">
+        <p class="message">
+          <i
+            class="fa-solid fa-quote-left icon-accent"
+            style="vertical-align: super"
+          ></i>
+          <span class="highlight">Happy Birthday Veronica</span> Semoga panjang
+          umur, selalu bahagia, dan sukses dalam segala hal. Semoga hari-harimu
+          dipenuhi dengan sukacita dan apapun yang kamu impikan dapat tercapai
+          serta selalu dikelilingi oleh orang-orang yang baik
+          <i
+            class="fa-solid fa-quote-right icon-accent"
+            style="vertical-align: sub"
+          ></i>
+        </p>
+
+        <hr
+          style="
+            border: none;
+            border-top: 2px dashed rgba(255, 215, 0, 0.2);
+            margin: 30px 0;
+          "
+        />
+
+        <div class="gallery-area">
+          <img class="gif-side left" src="gif/dance1.gif" alt="Cat Gif" />
+          <img class="gif-side right" src="gif/dance3.gif" alt="Cat Gif" />
+
+          <div class="photo-grid">
+            <div class="polaroid">
+              <img src="foto/gambar1.jpg" alt="Memory 1" />
+            </div>
+            <div class="polaroid">
+              <img src="foto/gambar2.jpg" alt="Memory 2" />
+            </div>
+            <div class="polaroid">
+              <img src="foto/gambar3.jpg" alt="Memory 3" />
+            </div>
+            <div class="polaroid">
+              <img src="foto/gambar4.jpg" alt="Memory 4" />
+            </div>
+            <div class="polaroid">
+              <img src="foto/gambar5.jpg" alt="Memory 5" />
+            </div>
+            <div class="polaroid">
+              <img src="foto/gambar6.jpg" alt="Memory 6" />
+            </div>
+          </div>
+        </div>
+
+        <h3 class="footer-hash">
+          #CheersToVeronica
+          <i
+            class="fa-solid fa-champagne-glasses"
+            style="color: var(--pink)"
+          ></i>
+        </h3>
+      </div>
+
+      <div class="btn-container">
+        <button class="btn" id="magicBtn">
+          <i class="fa-solid fa-gift"></i> Buka Kejutan Spesial
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const containers = {
+        balloons: document.getElementById("balloons-container"),
+        rain: document.getElementById("rain-container"),
+        fireworks: document.getElementById("fireworks-container"),
+        starfield: document.getElementById("starfield"),
+      };
+
+      const ui = {
+        btn: document.getElementById("magicBtn"),
+        messageBox: document.getElementById("messageBox"),
+        characterGroup: document.getElementById("characterGroup"),
+        flames: document.querySelectorAll(".flame"),
+      };
+
+      const config = {
+        balloonColors: [
+          "#ff416c",
+          "#00f2fe",
+          "#ffd700",
+          "#a18cd1",
+          "#ff9a9e",
+          "#fff",
+        ],
+        confettiColors: ["#ffd700", "#ff416c", "#00f2fe", "#fff"],
+      };
+
+      let isFestivalActive = false;
+
+      function generateAtmosphere() {
+        let stars = "";
+        const starCount = window.innerWidth > 768 ? 80 : 40; // Kurangi jumlah bintang CSS shadow
+        for (let i = 0; i < starCount; i++) {
+          stars += `${Math.random() * 100}vw ${Math.random() * 100}vh ${Math.random() * 2}px #fff${i < starCount - 1 ? "," : ""}`;
+        }
+        containers.starfield.style.boxShadow = stars;
+      }
+
+      function createBalloon() {
+        if (document.visibilityState !== "visible") return;
+        const balloon = document.createElement("div");
+        balloon.classList.add("balloon");
+        const color =
+          config.balloonColors[
+            Math.floor(Math.random() * config.balloonColors.length)
+          ];
+
+        balloon.style.cssText = `
+                left: ${Math.random() * 80 + 10}vw; background-color: ${color};
+                border-bottom-color: ${color}; color: ${color}; transform: scale(${Math.random() * 0.4 + 0.8});
+                animation-duration: ${Math.random() * 4 + 8}s; --final-rot: ${Math.random() * 30 - 15}deg;
+            `;
+
+        balloon.addEventListener("click", function (e) {
+          createFireworksburst(e.clientX, e.clientY, 15, color, true);
+          this.remove();
+        });
+
+        containers.balloons.appendChild(balloon);
+        setTimeout(() => {
+          if (balloon.parentNode) balloon.remove();
+        }, 12000);
+      }
+
+      ui.btn.addEventListener("click", () => {
+        if (isFestivalActive) return;
+        isFestivalActive = true;
+
+        const music = document.getElementById("bgMusic");
+        if (music) music.play().catch((e) => console.log(e));
+
+        ui.messageBox.classList.add("show");
+        ui.btn.style.transform = "scale(0)";
+        ui.flames.forEach((flame) => (flame.style.opacity = "1"));
+
+        ui.characterGroup.style.animation = "none";
+        ui.characterGroup.style.transform =
+          "translateX(-50%) translateY(-10px) scale(1.03)";
+
+        const rect = ui.btn.getBoundingClientRect();
+        createFireworksburst(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+          60,
+          null,
+          false,
+        ); // Kurangi partikel awal
+
+        const bursts = [
+          { d: 200, x: 0.2, y: 0.3 },
+          { d: 500, x: 0.8, y: 0.2 },
+          { d: 900, x: 0.5, y: 0.2 },
+          { d: 1300, x: 0.15, y: 0.5 },
+        ];
+
+        bursts.forEach((b) => {
+          setTimeout(() => {
+            createFireworksburst(
+              window.innerWidth * b.x,
+              window.innerHeight * b.y,
+              40,
+            ); // Kurangi partikel rentetan
+          }, b.d);
+        });
+
+        startConfettiRain();
+        clearInterval(balloonSpawner);
+        balloonSpawner = setInterval(createBalloon, 800); // Batasi spawner balon agar tidak menumpuk
+      });
+
+      function createFireworksburst(
+        x,
+        y,
+        particleCount = 30,
+        specificColor = null,
+        isPop = false,
+      ) {
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement("div");
+          particle.classList.add("fw-particle");
+          const color =
+            specificColor ||
+            config.balloonColors[
+              Math.floor(Math.random() * config.balloonColors.length)
+            ];
+          const size = isPop ? Math.random() * 4 + 2 : Math.random() * 6 + 3;
+
+          particle.style.cssText = `width: ${size}px; height: ${size}px; background-color: ${color}; left: ${x}px; top: ${y}px;`;
+
+          const angle = Math.random() * Math.PI * 2;
+          const velocity = isPop
+            ? Math.random() * 70 + 20
+            : Math.random() * 120 + 40;
+          particle.style.setProperty("--tx", `${Math.cos(angle) * velocity}px`);
+          particle.style.setProperty(
+            "--ty",
+            `${Math.sin(angle) * velocity + 40}px`,
+          );
+
+          const duration = isPop ? 0.5 : Math.random() * 0.4 + 0.6;
+          particle.style.animation = `fireworkBurst ${duration}s cubic-bezier(0.1, 0.5, 0.3, 1) forwards`;
+
+          fragment.appendChild(particle);
+          setTimeout(() => particle.remove(), duration * 1000);
+        }
+        containers.fireworks.appendChild(fragment);
+      }
+
+      function startConfettiRain() {
+        setInterval(() => {
+          if (document.visibilityState !== "visible") return;
+          const conf = document.createElement("div");
+          conf.classList.add("rain-confetti");
+          const color =
+            config.confettiColors[
+              Math.floor(Math.random() * config.confettiColors.length)
+            ];
+          const size = Math.random() * 8 + 4;
+
+          conf.style.cssText = `
+                    left: ${Math.random() * 100}vw; background-color: ${color}; width: ${size}px; height: ${size}px;
+                    border-radius: ${Math.random() > 0.5 ? "50%" : "2px"}; opacity: ${Math.random() * 0.5 + 0.5};
+                    animation-duration: ${Math.random() * 1.5 + 2.5}s;
+                `;
+
+          containers.rain.appendChild(conf);
+          setTimeout(() => conf.remove(), 4000); // Hapus lebih cepat dari memori
+        }, 120); // Perjarang kemunculan konfeti (dari 70ms menjadi 120ms)
+      }
+
+      window.addEventListener("load", () => {
+        generateAtmosphere();
+        balloonSpawner = setInterval(createBalloon, 2000);
+      });
+      let balloonSpawner;
+    </script>
+  </body>
+</html>
